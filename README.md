@@ -30,6 +30,7 @@ You can run the app with:
 ``` sh
 npm start
 ```
+**Note: Should be in the react-app directory while running the above command.**
 
 Start the FastAPI backend with:
 ``` sh
