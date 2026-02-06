@@ -1,0 +1,29 @@
+[project]
+name = "data_science_crew"
+version = "0.1.0"
+description = "data_science_crew using CrewAI"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[tools]==1.9.2",
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "pydantic>=2.6"
+]
+
+[project.scripts]
+data_science_crew = "data_science_crew.main:run"
+run_crew = "data_science_crew.main:run"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.crewai]
+type = "crew"

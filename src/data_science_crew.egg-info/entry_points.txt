@@ -1,0 +1,3 @@
+[console_scripts]
+data_science_crew = data_science_crew.main:run
+run_crew = data_science_crew.main:run

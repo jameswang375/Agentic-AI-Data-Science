@@ -1,0 +1,10 @@
+Metadata-Version: 2.4
+Name: data_science_crew
+Version: 0.1.0
+Summary: data_science_crew using CrewAI
+Requires-Python: <3.14,>=3.10
+Requires-Dist: crewai[tools]==1.9.2
+Requires-Dist: pandas>=2.0
+Requires-Dist: numpy>=1.26
+Requires-Dist: matplotlib>=3.8
+Requires-Dist: pydantic>=2.6

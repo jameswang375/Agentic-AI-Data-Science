@@ -1,0 +1,306 @@
+minimal_wrangling_plan_task:
+  description: >
+    You are a Senior Data Engineer responsible for assessing whether
+    a raw CSV dataset requires MINIMAL WRANGLING before exploratory
+    data analysis (EDA) can be performed.
+
+    Your job is NOT to clean or transform the data.
+    Your job is to decide whether any minimal, non-interpretive
+    wrangling actions are REQUIRED to make EDA technically possible
+    and honest.
+
+    You MUST output a JSON object matching EXACTLY the schema below.
+    This schema is shared across later pipeline stages.
+
+    Your output MUST be a single JSON object matching this schema:
+
+    {
+      "strip_column_names": true|false,
+      "strip_string_values": true|false,
+      "convert_empty_strings_to_null": true|false,
+      "safe_numeric_coercion": true|false,
+      "drop_columns": [ ... ]
+    }
+
+    Interpretation rules for THIS TASK:
+
+    - This plan applies ONLY to minimal wrangling for EDA
+    - Empty objects/lists explicitly mean "no action required"
+    - drop_columns may ONLY include unusable columns
+      (e.g., unnamed index columns, fully constant columns)
+
+    Rules:
+    - Only include keys exactly as above
+    - Only include column names that exist in the dataset
+    - Use proper lists, booleans, and dicts
+    - No scaling, normalization, or feature engineering
+    - No modeling assumptions
+
+    You MUST:
+    - Be conservative
+    - Base decisions strictly on dataset inspection
+    - Output a SINGLE valid JSON object and nothing else
+    - Only focus on the most critical columns (which you will identify to your best judgement) and drop the other ones from the drop_columns list, 
+    which you will add into the output JSON. If there are more than 50 columns, only focus on the most critical 25 columns from which you can
+    develop visualizations.
+
+    You MUST NOT:
+    - Write pandas, numpy, or sklearn code
+    - Modify the dataset
+    - Explain decisions outside the JSON
+
+    Input dataset path:
+    {dataset_path}
+
+  expected_output: >
+    A valid JSON object matching the fixed schema that represents
+    the minimal wrangling plan required for EDA, where empty
+    structures explicitly indicate no action is required.
+
+
+
+minimal_wrangling_execution_task:
+  description: >
+    You are a Senior Data Engineer responsible for EXECUTING an
+    approved minimal wrangling plan for exploratory data analysis (EDA).
+
+    You are given:
+    - A raw dataset path
+    - A minimal wrangling plan in valid JSON format
+      produced by the minimal wrangling plan task (task before this one)
+
+    Your job is to:
+    - Call the minimal wrangling execution tool
+    - Apply the plan exactly as specified
+    - Save the minimally wrangled dataset to disk
+    - Report the output dataset path and applied actions
+
+    You MUST:
+    - Use the minimal wrangling execution tool
+    - Execute the plan deterministically
+    - Preserve the original meaning of the data
+    - Save the resulting dataset to disk
+
+    You MUST NOT:
+    - Modify or reinterpret the plan
+    - Add new wrangling steps
+    - Perform EDA, profiling, or modeling
+    - Write pandas code yourself
+
+    Inputs:
+    - Raw dataset path: {dataset_path}
+    - Output dataset path: {cleaned_dataset_path}
+
+  expected_output: >
+    A structured execution report including:
+    - Wrangled dataset path
+    - Row count before and after wrangling
+    - List of applied wrangling steps
+
+
+dataset_profiling_task:
+  description: >
+    You are a Senior Data Analyst responsible for producing a
+    descriptive statistical profile of a dataset intended for
+    exploratory data analysis (EDA).
+
+    You are given:
+    - A dataset path (after minimal wrangling, if any)
+    - A minimal wrangling assessment JSON (which may contain no actions)
+
+    Your job is to DESCRIBE the dataset, not modify it.
+
+    You MUST:
+    - Compute dataset-level statistics (row count, column count)
+    - Identify column data types
+    - Report missing value counts and percentages
+    - Compute basic descriptive statistics for numeric columns
+      (mean, median, std, min, max)
+    - Report unique value counts for categorical columns
+    - Highlight notable structural properties (e.g., constant columns,
+      high-cardinality categoricals, skewed distributions)
+
+      You MUST:
+    - Summarize numeric statistics per column in one line
+    - Do NOT output full tables
+    - Cap the report at ~500 tokens
+
+    You MUST:
+    - Base all outputs strictly on computed statistics
+    - Use neutral, descriptive language
+    - Avoid interpretation or causal claims
+
+
+    You MUST NOT:
+    - Clean or modify the data
+    - Impute missing values
+    - Drop columns
+    - Transform features
+    - Make recommendations or judgments
+
+
+
+    Inputs:
+    - Dataset path: {cleaned_dataset_path}
+
+  expected_output: >
+    A structured dataset profiling report describing dataset shape,
+    column types, missing values, descriptive statistics, and
+    structural characteristics, suitable for guiding EDA.
+
+
+eda_planning_task:
+  description: >
+    You are a Data Analyst responsible for PLANNING exploratory
+    data analysis (EDA) on a dataset that has undergone only
+    minimal wrangling.
+
+    You are given:
+    - A minimally wrangled dataset
+    - A dataset profiling report
+    - A minimal wrangling plan (which may be empty)
+
+    Your job is to decide WHAT analyses and visualizations should
+    be performed to understand the dataset.
+
+    You MUST:
+    - Propose exploratory analyses based strictly on profiling results
+    - Specify which columns should be visualized together
+    - Choose appropriate plot types for each analysis
+    - Focus on understanding distributions, relationships, and anomalies
+
+    You MUST NOT:
+    - Run any code
+    - Modify or clean the data
+    - Engineer features
+    - Perform modeling or hypothesis testing
+    - Assume causation
+
+    Your output MUST be a SINGLE valid JSON object matching
+    EXACTLY the schema below:
+
+    {
+      "univariate": [
+        {
+          "column": "column_name",
+          "plot": "histogram|bar"
+        }
+      ],
+      "bivariate": [
+        {
+          "x": "column_name",
+          "y": "column_name",
+          "plot": "scatter"
+        }
+      ]
+    }
+
+
+    Rules:
+    - Only include columns that exist in the dataset
+    - Choose plot types appropriate to the data type
+    - Keep the plan concise and focused
+    - Do not include redundant visualizations
+    - Prefer interpretability over exhaustiveness
+
+    Inputs:
+    - Cleaned dataset path: {cleaned_dataset_path}
+
+  expected_output: >
+    A valid JSON EDA plan describing which visualizations
+    should be generated to explore the dataset.
+
+
+eda_execution_task:
+  description: >
+    You are a Data Analyst responsible for EXECUTING an approved
+    exploratory data analysis (EDA) plan.
+
+    You are given:
+    - A minimally wrangled dataset path
+    - An EDA plan in valid JSON format produced by the EDA planning task
+
+    Your job is to:
+    - Call the EDA visualization execution tool
+    - Generate the specified plots exactly as described
+    - Save all visualizations to disk
+    - Report where the artifacts were saved
+
+    You MUST:
+    - Use the EDA visualization execution tool
+    - Execute the plan deterministically
+    - Generate only the requested plots
+    - Save outputs in the standard reports/plots directory
+    - Forget about multivariate plots. Just stick to univariate and bivariate plots.
+    - Forget about boxplots. Just stick to histograms, bar plots, and scatter plots.
+
+    You MUST NOT:
+    - Modify the EDA plan
+    - Add or remove visualizations
+    - Clean or transform the dataset
+    - Perform interpretation or reporting
+    
+    Rules:
+    - Max 2 univariate plots
+    - Max 2 bivariate plots
+    - Try to output few, but insightful plots. Quality over quantity.
+    
+    Inputs:
+    - Dataset path: {cleaned_dataset_path}
+
+  expected_output: >
+    A structured execution report including:
+    - Output directory path
+    - List of generated visualization files (with relative paths for Markdown embedding)
+    - Any execution warnings or notes
+
+
+insights_report_task:
+  description: >
+    Review all prior analysis outputs including:
+    - Data cleaning and preprocessing decisions
+    - Exploratory data analysis results and visualizations
+
+    Your job is to synthesize these results into a single,
+    non-technical insights report for stakeholders.
+
+    The report should explain:
+    - What notable patterns or trends were found in the data
+    - What surprised or stood out during analysis
+    - What potential risks, limitations, or data quality concerns exist
+    - What actionable insights or next steps the data suggests
+
+    Do NOT:
+    - Explain technical methods, algorithms, or code
+    - Introduce new analysis or assumptions
+    - Use statistical or mathematical jargon
+
+    You are provided with a list of generated EDA plots and their relative file paths.
+
+    You MUST:
+    - Embed relevant plots directly in the Markdown report using **absolute URLs pointing to the FastAPI server**
+      (e.g. ![](http://localhost:8000/reports/plots/example.png))
+    - Place plots immediately after the section where they are discussed
+    - Only include plots that directly support a written insight
+    - Reference plots naturally in the narrative (e.g. "As shown in the histogram below...")
+
+
+    You MUST NOT:
+    - Include plots without explanation
+    - Invent plots that were not generated
+    - Modify file paths or image filenames
+
+    The report MUST follow this structure:
+    1. Executive Summary (5 to 7 sentences)
+    2. Key Insights (bullet points with short explanations)
+    3. Risks & Limitations
+    4. Recommended Next Steps
+
+    Write in plain language that a non-technical reader can understand.
+
+  expected_output: >
+    A well-structured insights report written in clear, non-technical language,
+    containing a short executive summary, 3 to 6 key insights with explanations,
+    and a concise list of actionable recommendations or next steps.
+
+  output_file: reports/insights_report.md

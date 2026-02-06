@@ -1,0 +1,5 @@
+crewai[tools]==1.9.2
+pandas>=2.0
+numpy>=1.26
+matplotlib>=3.8
+pydantic>=2.6

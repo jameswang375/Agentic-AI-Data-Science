@@ -1,0 +1,13 @@
+README.md
+pyproject.toml
+src/data_science_crew/__init__.py
+src/data_science_crew/crew.py
+src/data_science_crew/main.py
+src/data_science_crew.egg-info/PKG-INFO
+src/data_science_crew.egg-info/SOURCES.txt
+src/data_science_crew.egg-info/dependency_links.txt
+src/data_science_crew.egg-info/entry_points.txt
+src/data_science_crew.egg-info/requires.txt
+src/data_science_crew.egg-info/top_level.txt
+src/data_science_crew/tools/__init__.py
+src/data_science_crew/tools/custom_tool.py
