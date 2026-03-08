@@ -13,7 +13,6 @@ const pageTransition = {
 
 function App() {
   const [appState, setAppState] = useState("idle");
-  // idle | executing | completed | error
   const [file, setFile] = useState(null);
   const [report, setReport] = useState("");
 

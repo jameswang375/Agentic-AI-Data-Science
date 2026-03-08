@@ -17,7 +17,7 @@ Download this repo first.
 Then, install all dependencies for Python and React:
 
 ``` sh
-pip3 install .
+pip3 install -e .
 ```
 
 ``` sh
