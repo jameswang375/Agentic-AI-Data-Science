@@ -35,5 +35,4 @@ RUN pip install .
 # Bring React build into backend
 COPY --from=frontend-build /app/react-app/build ./build
 
-# Render requires 0.0.0.0 and port 10000
-CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "10000"]
+CMD ["sh", "-c", "uvicorn api:app --host 0.0.0.0 --port ${PORT:-10000}"]
