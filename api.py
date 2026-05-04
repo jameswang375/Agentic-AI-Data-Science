@@ -16,7 +16,7 @@ app = FastAPI(title="CrewAI API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000",
-                   "https://crew-ai-api.onrender.com"],
+                   "https://agentic-ai-data-science.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
