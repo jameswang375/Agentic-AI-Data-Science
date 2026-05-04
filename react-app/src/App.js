@@ -27,13 +27,13 @@ function App() {
       formData.append("file", file);
 
       const runRes = await axios.post(
-        "http://localhost:10000/run",
+        "/run",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       const reportRes = await axios.get(
-        `http://localhost:10000/${runRes.data.report_path}`
+        `/${runRes.data.report_path}`
       );
 
       setReport(reportRes.data);
