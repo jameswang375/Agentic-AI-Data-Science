@@ -22,7 +22,7 @@ def run(*, dataset_path: str, base_url: str):
         inputs={
             "dataset_path": dataset_path,
             "cleaned_dataset_path": "data/cleaned.csv",
-            "base_url": base_url
+            "base_url": "https://agentic-ai-data-science.onrender.com"
         }
     )
 
