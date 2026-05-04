@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
 
 
-def run(*, dataset_path: str):
+def run(*, dataset_path: str, base_url: str):
     """
     Run the full CrewAI data science pipeline for a dataset.
     Produces reports and plots as side effects on disk.
@@ -22,6 +22,7 @@ def run(*, dataset_path: str):
         inputs={
             "dataset_path": dataset_path,
             "cleaned_dataset_path": "data/cleaned.csv",
+            "base_url": base_url
         }
     )
 

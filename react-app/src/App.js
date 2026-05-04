@@ -27,13 +27,13 @@ function App() {
       formData.append("file", file);
 
       const runRes = await axios.post(
-        "http://localhost:8000/run",
+        "http://localhost:10000/run",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
       const reportRes = await axios.get(
-        `http://localhost:8000/${runRes.data.report_path}`
+        `http://localhost:10000/${runRes.data.report_path}`
       );
 
       setReport(reportRes.data);
@@ -78,7 +78,7 @@ function App() {
 
         {appState === "error" && (
           <motion.div key="error" {...pageTransition}>
-            <ErrorState />
+            <ErrorState onReset={resetApp} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -100,7 +100,7 @@ function EmptyState({ file, onFileSelect, onSubmit }) {
         {/* Always show the file input */}
         <input
           type="file"
-          accept=".csv,.json,.parquet"
+          accept=".csv,.json,.parquet,.xml,.avro"
           onChange={(e) => onFileSelect(e.target.files[0])}
         />
 
@@ -157,6 +157,16 @@ function ExecutionState() {
 }
 
 function ResultState({ report, onReset }) {
+const downloadCleaned = async () => {
+    const res = await fetch("http://localhost:10000/download/cleaned");
+    const blob = await res.blob();
+
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "cleaned_dataset.csv";
+    a.click();
+  };
+
   return (
     <motion.div
       className="result-container markdown-container"
@@ -164,7 +174,12 @@ function ResultState({ report, onReset }) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+
+      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+        <button className="primary-button" onClick={downloadCleaned}>
+          Download Cleaned Dataset
+        </button>
+
         <button className="primary-button" onClick={onReset}>
           New Analysis
         </button>
@@ -175,11 +190,15 @@ function ResultState({ report, onReset }) {
   );
 }
 
-function ErrorState() {
+function ErrorState({ onReset }) {
   return (
     <div className="centered">
       <h2>⚠️ Something went wrong</h2>
       <p className="muted">Please try again.</p>
+
+      <button className="primary-button" onClick={onReset} style={{ marginTop: "15px"}}>
+          ← Back to Home
+        </button>
     </div>
   );
 }

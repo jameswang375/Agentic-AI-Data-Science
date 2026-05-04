@@ -1,0 +1,9 @@
+react-app/node_modules
+node_modules
+__pycache__
+*.pyc
+.git
+.gitignore
+.env
+build
+dist
