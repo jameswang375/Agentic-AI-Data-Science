@@ -1,41 +1,8 @@
 # Exploring a dataset via Agentic AI
 A web application that can produce insights and analyses on an uploaded dataset by running a multi-agent system specialized in data science workflows.
 
-### Environment Variables
-
-Create a `.env` file from the example:
-
-```bash
-cp .env.example .env
-```
-
-**You will need your own OPENAI API key!**
-
-## Installation
-Download this repo first.
-
-Then, install all dependencies for Python and React:
-
-``` sh
-pip3 install -e .
-```
-
-``` sh
-cd react-app
-npm install
-```
-
-## Running the App
-You can run the app with:
-``` sh
-npm start
-```
-**Note: Should be in the react-app directory while running the above command.**
-
-Start the FastAPI backend with:
-``` sh
-uvicorn api:app --reload
-```
+## Live Demo
+https://agentic-ai-data-science.onrender.com
 
 ## About This App
 This project is a **full-stack AI-powered analytics platform** built with **CrewAI**, **React**, and **FastAPI**. At its core, it leverages a **multi-agent AI system**, where specialized agents autonomously handle key data science tasks such as **data cleaning**, **exploratory data analysis**, along with generating insights and next steps.

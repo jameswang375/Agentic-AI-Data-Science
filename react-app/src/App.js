@@ -158,7 +158,7 @@ function ExecutionState() {
 
 function ResultState({ report, onReset }) {
 const downloadCleaned = async () => {
-    const res = await fetch("http://localhost:10000/download/cleaned");
+    const res = await fetch("/download/cleaned");
     const blob = await res.blob();
 
     const a = document.createElement("a");
