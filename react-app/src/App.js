@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,16 +11,32 @@ const pageTransition = {
   transition: { duration: 0.35, ease: "easeOut" },
 };
 
+const STEPS = [
+  "Planning data cleanup",
+  "Cleaning dataset",
+  "Profiling dataset",
+  "Planning visualizations",
+  "Generating visualizations",
+  "Writing initial report",
+  "Evaluating report quality",
+  "Revising final report",
+];
+
 function App() {
   const [appState, setAppState] = useState("idle");
   const [file, setFile] = useState(null);
   const [report, setReport] = useState("");
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [completedSteps, setCompletedSteps] = useState([]);
+  const [runId, setRunId] = useState(null);
 
   const handleUpload = async () => {
     if (!file) return;
 
     setAppState("executing");
     setReport("");
+    setCurrentStep(-1);
+    setCompletedSteps([]);
 
     try {
       const formData = new FormData();
@@ -32,12 +48,40 @@ function App() {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      const reportRes = await axios.get(
-        `/${runRes.data.report_path}`
-      );
+      const { run_id } = runRes.data;
+      setRunId(run_id);
 
-      setReport(reportRes.data);
-      setAppState("completed");
+      await new Promise((resolve, reject) => {
+        const es = new EventSource(`/progress/${run_id}`);
+
+        es.onmessage = async (e) => {
+          const event = JSON.parse(e.data);
+
+          if (event.type === "task_started") {
+            setCurrentStep(event.index);
+          } else if (event.type === "task_completed") {
+            setCompletedSteps((prev) => [...prev, event.index]);
+          } else if (event.type === "done") {
+            es.close();
+            try {
+              const reportRes = await axios.get(`/${event.report_path}`);
+              setReport(reportRes.data);
+              setAppState("completed");
+            } catch (err) {
+              reject(err);
+            }
+            resolve();
+          } else if (event.type === "error") {
+            es.close();
+            reject(new Error(event.message));
+          }
+        };
+
+        es.onerror = () => {
+          es.close();
+          reject(new Error("Connection lost"));
+        };
+      });
     } catch (err) {
       console.error(err);
       setAppState("error");
@@ -66,13 +110,13 @@ function App() {
 
         {appState === "executing" && (
           <motion.div key="executing" {...pageTransition}>
-            <ExecutionState />
+            <ExecutionState currentStep={currentStep} completedSteps={completedSteps} />
           </motion.div>
         )}
 
         {appState === "completed" && (
           <motion.div key="completed" {...pageTransition}>
-            <ResultState report={report} onReset={resetApp} />
+            <ResultState report={report} runId={runId} onReset={resetApp} />
           </motion.div>
         )}
 
@@ -89,6 +133,29 @@ function App() {
 /* ---------------- STATES ---------------- */
 
 function EmptyState({ file, onFileSelect, onSubmit }) {
+  const inputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const dropped = e.dataTransfer.files[0];
+    if (dropped) onFileSelect(dropped);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    if (!e.currentTarget.contains(e.relatedTarget)) setIsDragging(false);
+  };
+
+  const handleCardClick = () => {
+    if (!file) inputRef.current.click();
+  };
+
   return (
     <div className="centered">
       <h1 className="title">Agentic AI Powered Data Science</h1>
@@ -96,71 +163,104 @@ function EmptyState({ file, onFileSelect, onSubmit }) {
         Upload a dataset to generate an AI-powered analysis
       </p>
 
-      <div className="upload-card">
-        {/* Always show the file input */}
+      <div
+        className={`upload-card ${isDragging ? "dragging" : ""}`}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={handleCardClick}
+      >
         <input
+          ref={inputRef}
           type="file"
           accept=".csv,.json,.parquet,.xml,.avro"
+          style={{ display: "none" }}
           onChange={(e) => onFileSelect(e.target.files[0])}
         />
 
-        {/* Only show Analyze button and filename AFTER a file is selected */}
-        {file && (
+        {!file ? (
           <>
-            <button className="primary-button" onClick={onSubmit}>
+            <div className="drop-icon">↑</div>
+            <p className="drop-hint">Drag & drop your dataset here</p>
+            <p className="drop-hint muted">or click to browse</p>
+          </>
+        ) : (
+          <>
+            <p className="filename">📄 {file.name}</p>
+            <button
+              className="primary-button"
+              onClick={(e) => { e.stopPropagation(); onSubmit(); }}
+            >
               Analyze Dataset
             </button>
-            <p className="filename">📄 {file.name}</p>
+            <button
+              className="secondary-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onFileSelect(null);
+                inputRef.current.value = "";
+              }}
+            >
+              Choose different file
+            </button>
           </>
         )}
+
+        <p className="file-hint">CSV · JSON · Parquet · XML · Avro</p>
       </div>
     </div>
   );
 }
 
-function ExecutionState() {
-  const agents = [
-    "🧹 Data Engineer Agent Cleaning Data",
-    "📊 Analyst Agent Performing Exploratory Data Analysis",
-    "✍️ Writer Agent Drafting Report",
-  ];
+function ExecutionState({ currentStep, completedSteps }) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatTime = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}m ${sec.toString().padStart(2, "0")}s`;
+  };
 
   return (
     <div className="centered">
       <h2>🧠 Analyzing Your Dataset</h2>
+      <p className="muted elapsed">{formatTime(elapsed)}</p>
 
-      <div className="spinner" />
-      <p className="muted">This may take a minute…</p>
+      <div className="step-list">
+        {STEPS.map((label, i) => {
+          const isDone = completedSteps.includes(i);
+          const isActive = currentStep === i && !isDone;
+          const isPending = !isDone && !isActive;
 
-      <motion.div
-        className="agent-list"
-        initial="hidden"
-        animate="visible"
-        variants={{
-          visible: { transition: { staggerChildren: 0.2 } },
-        }}
-      >
-        {agents.map((text, i) => (
-          <motion.p
-            key={i}
-            variants={{
-              hidden: { opacity: 0, y: 5 },
-              visible: { opacity: 1, y: 0 },
-            }}
-          >
-            {text}
-          </motion.p>
-        ))}
-      </motion.div>
+          return (
+            <motion.div
+              key={i}
+              className={`step-row ${isDone ? "done" : isActive ? "active" : "pending"}`}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: isPending ? 0.35 : 1, x: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.25 }}
+            >
+              <span className="step-icon">
+                {isDone ? "✓" : isActive ? <span className="step-spinner" /> : "○"}
+              </span>
+              <span className="step-label">{label}</span>
+            </motion.div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-function ResultState({ report, onReset }) {
-const downloadCleaned = async () => {
-    const res = await fetch("/download/cleaned");
+function ResultState({ report, runId, onReset }) {
+  const downloadCleaned = async () => {
+    const res = await fetch(`/download/${runId}/cleaned`);
     const blob = await res.blob();
-
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "cleaned_dataset.csv";
@@ -169,23 +269,23 @@ const downloadCleaned = async () => {
 
   return (
     <motion.div
-      className="result-container markdown-container"
+      className="result-wrapper"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
     >
-
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+      <div className="result-toolbar">
         <button className="primary-button" onClick={downloadCleaned}>
           Download Cleaned Dataset
         </button>
-
         <button className="primary-button" onClick={onReset}>
           New Analysis
         </button>
       </div>
-      
-      <ReactMarkdown>{report}</ReactMarkdown>
+
+      <div className="result-container markdown-container">
+        <ReactMarkdown>{report}</ReactMarkdown>
+      </div>
     </motion.div>
   );
 }

@@ -2,7 +2,8 @@
 import sys
 import warnings
 from datetime import datetime
-from data_science_crew.crew import DataScienceCrew
+from data_science_crew.crew import DataScienceCrew, STEPS
+from data_science_crew import progress
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
@@ -13,18 +14,38 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
 
 
-def run(*, dataset_path: str, base_url: str):
+def run(*, dataset_path: str, base_url: str, run_dir: str = ".", emit=None):
     """
     Run the full CrewAI data science pipeline for a dataset.
-    Produces reports and plots as side effects on disk.
+    All outputs are scoped to run_dir for per-run isolation.
+    If emit is provided, progress events are pushed to it as the pipeline runs.
     """
-    DataScienceCrew().crew().kickoff(
-        inputs={
-            "dataset_path": dataset_path,
-            "cleaned_dataset_path": "data/cleaned.csv",
-            "base_url": "https://agentic-ai-data-science.onrender.com"
-        }
-    )
+    from pathlib import Path
+
+    run_path = Path(run_dir)
+    cleaned_dataset_path = str(run_path / "data" / "cleaned.csv")
+    plots_dir = str(run_path / "reports" / "plots")
+    report_path = run_path / "reports" / "insights_report.md"
+
+    (run_path / "data").mkdir(parents=True, exist_ok=True)
+    (run_path / "reports").mkdir(parents=True, exist_ok=True)
+
+    if emit:
+        progress.setup(emit)
+        progress.emit({"type": "task_started", "task": STEPS[0], "index": 0})
+
+    try:
+        result = DataScienceCrew().crew().kickoff(
+            inputs={
+                "dataset_path": dataset_path,
+                "cleaned_dataset_path": cleaned_dataset_path,
+                "plots_dir": plots_dir,
+                "base_url": base_url,
+            }
+        )
+        report_path.write_text(result.raw)
+    finally:
+        progress.teardown()
 
 def train():
     """

@@ -9,3 +9,6 @@ venv/
 node_modules/
 build/
 .env.local
+runs/
+uploads/
+*.egg-info/

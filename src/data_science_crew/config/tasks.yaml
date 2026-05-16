@@ -230,7 +230,7 @@ eda_execution_task:
     - Use the EDA visualization execution tool
     - Execute the plan deterministically
     - Generate only the requested plots
-    - Save outputs in the standard reports/plots directory
+    - Pass output_dir as {plots_dir} and base_url as {base_url} to the tool
     - Forget about multivariate plots. Just stick to univariate and bivariate plots.
     - Forget about boxplots. Just stick to histograms, bar plots, and scatter plots.
 
@@ -239,14 +239,16 @@ eda_execution_task:
     - Add or remove visualizations
     - Clean or transform the dataset
     - Perform interpretation or reporting
-    
+
     Rules:
     - Max 2 univariate plots
     - Max 2 bivariate plots
     - Try to output few, but insightful plots. Quality over quantity.
-    
+
     Inputs:
     - Dataset path: {cleaned_dataset_path}
+    - Plots output directory: {plots_dir}
+    - Base URL for image links: {base_url}
 
   expected_output: >
     A structured execution report including:
@@ -309,4 +311,102 @@ insights_report_task:
     containing a short executive summary, 3 to 6 key insights with explanations,
     and a concise list of actionable recommendations or next steps.
 
-  output_file: reports/insights_report.md
+
+
+report_critique_task:
+  description: >
+    You are a Report Quality Judge. You have been given:
+    - A draft insights report produced by the reporting analyst
+    - The dataset profiling report from earlier in the pipeline
+
+    Your job is to evaluate the draft report on three dimensions and
+    produce a structured, actionable critique the reporting analyst
+    will use to revise the report.
+
+    Evaluation dimensions:
+
+    1. CLARITY
+       - Is the report written in plain, non-technical language?
+       - Does it follow the required structure: Executive Summary,
+         Key Insights, Risks & Limitations, Recommended Next Steps?
+       - Are sections clearly labelled and logically ordered?
+       - Score 1-5.
+
+    2. ACCURACY
+       - Are all claims in the report directly supported by the dataset profile?
+       - Are there any invented numbers, trends, or patterns not present in the data?
+       - Are plots referenced correctly and only where they exist?
+       - Score 1-5.
+
+    3. RELEVANCE
+       - Does the report address the most important characteristics of this dataset?
+       - Run these dynamic assertions based on the dataset profile:
+         * If any column has more than 5% missing values, the report MUST mention
+           missing or incomplete data. Flag if it does not.
+         * If the profiling report describes a numeric column with high std deviation
+           or skew, the report MUST mention variability or outliers. Flag if it does not.
+         * If two numeric columns are present, the report SHOULD reference a
+           relationship or comparison between variables. Flag if it does not.
+         * If the dataset appears clean with no notable issues, the report
+           MUST NOT raise data quality concerns. Flag if it does.
+       - Score 1-5.
+
+    Your output MUST follow this exact structure:
+
+    CLARITY [score/5]
+    <one paragraph: what works, what does not, specific sentences to fix>
+
+    ACCURACY [score/5]
+    <one paragraph: list any unsupported claims or omissions, or confirm accuracy>
+
+    RELEVANCE [score/5]
+    <one paragraph: list which dynamic assertions passed or failed with specifics>
+
+    REVISION INSTRUCTIONS
+    <a numbered list of specific, concrete changes the reporting analyst must make.
+    Each instruction must reference a section of the report and say exactly what to add,
+    remove, or rewrite. Do not give vague guidance like "improve clarity".>
+
+    Be direct and precise. The reporting analyst will act on every instruction.
+
+  expected_output: >
+    A structured critique with scores for clarity, accuracy, and relevance,
+    dynamic assertion results, and a numbered list of specific revision
+    instructions the reporting analyst must act on.
+
+
+report_revision_task:
+  description: >
+    You are the reporting analyst. You have been given:
+    - A draft insights report
+    - A structured critique from the report quality judge, including
+      specific revision instructions
+
+    Your job is to produce a revised final report that addresses every
+    revision instruction from the judge.
+
+    You MUST:
+    - Follow every numbered revision instruction precisely
+    - Preserve all sections: Executive Summary, Key Insights,
+      Risks & Limitations, Recommended Next Steps
+    - Keep all correctly embedded plot images unchanged
+    - Maintain plain, non-technical language throughout
+    - Not introduce new claims beyond what the data supports
+
+    You MUST NOT:
+    - Ignore any revision instruction
+    - Add new sections not in the original structure
+    - Invent data, statistics, or patterns not present in the analysis
+    - Change plot file paths or image URLs
+
+    Add this footer at the end of the revised report:
+
+    ---
+
+    Generated by an AI multi-agent data science system. Results are automatically generated and may contain inaccuracies.
+
+  expected_output: >
+    A revised insights report that fully addresses all judge critique points,
+    written in clear non-technical language, with the correct four-section
+    structure and all plot images preserved.
+
