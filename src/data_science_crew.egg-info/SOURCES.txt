@@ -3,6 +3,7 @@ pyproject.toml
 src/data_science_crew/__init__.py
 src/data_science_crew/crew.py
 src/data_science_crew/main.py
+src/data_science_crew/progress.py
 src/data_science_crew.egg-info/PKG-INFO
 src/data_science_crew.egg-info/SOURCES.txt
 src/data_science_crew.egg-info/dependency_links.txt

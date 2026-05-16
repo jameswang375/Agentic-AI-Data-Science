@@ -230,7 +230,7 @@ eda_execution_task:
     - Use the EDA visualization execution tool
     - Execute the plan deterministically
     - Generate only the requested plots
-    - Pass output_dir as {plots_dir} and base_url as {base_url} to the tool
+    - Pass output_dir as {plots_dir} to the tool
     - Forget about multivariate plots. Just stick to univariate and bivariate plots.
     - Forget about boxplots. Just stick to histograms, bar plots, and scatter plots.
 
@@ -248,7 +248,6 @@ eda_execution_task:
     Inputs:
     - Dataset path: {cleaned_dataset_path}
     - Plots output directory: {plots_dir}
-    - Base URL for image links: {base_url}
 
   expected_output: >
     A structured execution report including:
@@ -280,8 +279,8 @@ insights_report_task:
     You are provided with a list of generated EDA plots and their relative file paths.
 
     You MUST:
-    - Embed relevant plots directly in the Markdown report using **absolute URLs pointing to the FastAPI server**
-      (e.g. ![]({{base_url}}/reports/plots/example.png))
+    - Embed relevant plots directly in the Markdown report using the relative image paths returned by the EDA tool
+      (e.g. ![](/runs/some-id/reports/plots/example.png))
     - Place plots immediately after the section where they are discussed
     - Only include plots that directly support a written insight
     - Reference plots naturally in the narrative (e.g. "As shown in the histogram below...")

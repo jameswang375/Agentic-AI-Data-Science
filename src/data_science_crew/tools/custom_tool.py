@@ -200,10 +200,6 @@ class EDAExecutionInput(BaseModel):
         default="reports/plots",
         description="Directory to save generated plot images"
     )
-    base_url: str = Field(
-        default="http://localhost:10000",
-        description="Base URL used to construct image URLs embedded in the report"
-    )
 
 
 
@@ -227,7 +223,6 @@ class EDAExecutionTool(BaseTool):
         dataset_path: str,
         eda_plan: str,
         output_dir: str = "reports/plots",
-        base_url: str = "http://localhost:10000",
     ) -> str:
 
         # ----------------------------
@@ -320,7 +315,7 @@ class EDAExecutionTool(BaseTool):
                 plt.close()
 
                 # Save Markdown-relative path for the reporting agent
-                saved_images.append(f"{base_url.rstrip('/')}/{output_dir}/{filename}")
+                saved_images.append(f"/{output_dir}/{filename}")
 
 
             except Exception as e:
@@ -372,7 +367,7 @@ class EDAExecutionTool(BaseTool):
                 plt.close()
 
                 # Save Markdown-relative path for reporting
-                saved_images.append(f"{base_url.rstrip('/')}/{output_dir}/{filename}")
+                saved_images.append(f"/{output_dir}/{filename}")
 
 
             except Exception as e:

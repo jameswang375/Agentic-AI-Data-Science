@@ -8,3 +8,5 @@ Requires-Dist: pandas>=2.0
 Requires-Dist: numpy>=1.26
 Requires-Dist: matplotlib>=3.8
 Requires-Dist: pydantic>=2.6
+Requires-Dist: fastapi
+Requires-Dist: uvicorn[standard]

@@ -3,3 +3,5 @@ pandas>=2.0
 numpy>=1.26
 matplotlib>=3.8
 pydantic>=2.6
+fastapi
+uvicorn[standard]

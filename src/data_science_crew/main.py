@@ -40,7 +40,6 @@ def run(*, dataset_path: str, base_url: str, run_dir: str = ".", emit=None):
                 "dataset_path": dataset_path,
                 "cleaned_dataset_path": cleaned_dataset_path,
                 "plots_dir": plots_dir,
-                "base_url": base_url,
             }
         )
         report_path.write_text(result.raw)
