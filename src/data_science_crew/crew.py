@@ -4,7 +4,8 @@ from crewai.agents.agent_builder.base_agent import BaseAgent
 from data_science_crew.tools.custom_tool import (
     DatasetProfilingTool,
     MinimalWranglingExecutionTool,
-    EDAExecutionTool
+    EDAExecutionTool,
+    WranglingPlanValidatorTool,
 )
 from data_science_crew import progress
 
@@ -12,6 +13,7 @@ from typing import List
 
 STEPS = [
     "Planning data cleanup",
+    "Validating cleanup plan",
     "Cleaning dataset",
     "Profiling dataset",
     "Planning visualizations",
@@ -96,12 +98,21 @@ class DataScienceCrew():
         )
 
     @task
+    def wrangling_validation_task(self) -> Task:
+        return Task(
+            config=self.tasks_config["wrangling_plan_validation_task"],  # type: ignore[index]
+            agent=self.data_engineer(),
+            tools=[WranglingPlanValidatorTool()],
+            callback=_make_callback(1),
+        )
+
+    @task
     def wrangling_execution_task(self) -> Task:
         return Task(
             config=self.tasks_config["minimal_wrangling_execution_task"],  # type: ignore[index]
             agent=self.data_engineer(),
             tools=[MinimalWranglingExecutionTool()],
-            callback=_make_callback(1),
+            callback=_make_callback(2),
         )
 
     @task
@@ -110,7 +121,7 @@ class DataScienceCrew():
             config=self.tasks_config["dataset_profiling_task"],  # type: ignore[index]
             agent=self.data_engineer(),
             tools=[DatasetProfilingTool()],
-            callback=_make_callback(2),
+            callback=_make_callback(3),
         )
 
     @task
@@ -118,7 +129,7 @@ class DataScienceCrew():
         return Task(
             config=self.tasks_config["eda_planning_task"],  # type: ignore[index]
             agent=self.eda_analyst(),
-            callback=_make_callback(3),
+            callback=_make_callback(4),
         )
 
     @task
@@ -127,7 +138,7 @@ class DataScienceCrew():
             config=self.tasks_config["eda_execution_task"],  # type: ignore[index]
             agent=self.eda_analyst(),
             tools=[EDAExecutionTool()],
-            callback=_make_callback(4),
+            callback=_make_callback(5),
         )
 
     @task
@@ -135,7 +146,7 @@ class DataScienceCrew():
         return Task(
             config=self.tasks_config["insights_report_task"],  # type: ignore[index]
             agent=self.reporting_analyst(),
-            callback=_make_callback(5),
+            callback=_make_callback(6),
         )
 
     @task
@@ -144,7 +155,7 @@ class DataScienceCrew():
             config=self.tasks_config["report_critique_task"],  # type: ignore[index]
             agent=self.report_judge(),
             context=[self.insight_generation_task(), self.data_profiling_task()],
-            callback=_make_callback(6),
+            callback=_make_callback(7),
         )
 
     @task
@@ -153,7 +164,7 @@ class DataScienceCrew():
             config=self.tasks_config["report_revision_task"],  # type: ignore[index]
             agent=self.reporting_analyst(),
             context=[self.insight_generation_task(), self.report_critique_task()],
-            callback=_make_callback(7),
+            callback=_make_callback(8),
         )
 
 

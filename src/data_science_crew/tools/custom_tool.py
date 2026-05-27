@@ -61,6 +61,99 @@ class DatasetProfilingTool(BaseTool):
 
 
 
+class WranglingPlanValidatorInput(BaseModel):
+    dataset_path: str = Field(
+        ..., description="Path to the raw CSV dataset"
+    )
+    wrangling_plan: str = Field(
+        ..., description="JSON string of the wrangling plan to validate"
+    )
+
+
+class WranglingPlanValidatorTool(BaseTool):
+    name: str = "wrangling_plan_validator"
+    description: str = (
+        "Validates and silently corrects a wrangling plan before execution. "
+        "Removes hallucinated column names, protects important columns from being dropped, "
+        "and ensures the plan conforms to the required schema."
+    )
+    args_schema: Type[BaseModel] = WranglingPlanValidatorInput
+
+    def _run(self, dataset_path: str, wrangling_plan: str) -> str:
+        REQUIRED_KEYS = {
+            "strip_column_names": bool,
+            "strip_string_values": bool,
+            "convert_empty_strings_to_null": bool,
+            "safe_numeric_coercion": bool,
+            "drop_columns": list,
+        }
+        corrections = []
+
+        # --- Load dataset ---
+        try:
+            df = pd.read_csv(dataset_path)
+        except Exception as e:
+            return json.dumps({"error": f"Could not load dataset: {e}"})
+
+        # --- Parse plan ---
+        try:
+            plan = json.loads(wrangling_plan)
+        except Exception as e:
+            # Return a safe no-op plan if JSON is unparseable
+            corrections.append("Plan JSON was malformed — reset to safe no-op plan.")
+            plan = {k: (False if v == bool else []) for k, v in REQUIRED_KEYS.items()}
+
+        # --- Schema correction: fix missing or wrong-typed keys ---
+        for key, expected_type in REQUIRED_KEYS.items():
+            if key not in plan:
+                plan[key] = [] if expected_type == list else False
+                corrections.append(f"Missing key '{key}' added with safe default.")
+            elif not isinstance(plan[key], expected_type):
+                plan[key] = [] if expected_type == list else False
+                corrections.append(f"Key '{key}' had wrong type — reset to safe default.")
+
+        # Remove any unexpected keys
+        unexpected = [k for k in plan if k not in REQUIRED_KEYS]
+        for k in unexpected:
+            del plan[k]
+            corrections.append(f"Unexpected key '{k}' removed.")
+
+        # --- Drop columns safety ---
+        dataset_columns = set(df.columns)
+        drop_columns = plan.get("drop_columns", [])
+
+        # Remove columns that don't exist in the dataset
+        nonexistent = [c for c in drop_columns if c not in dataset_columns]
+        for c in nonexistent:
+            corrections.append(f"Column '{c}' not in dataset — removed from drop_columns.")
+        drop_columns = [c for c in drop_columns if c in dataset_columns]
+
+        # Protect columns that appear important:
+        # important = >50% non-null AND name doesn't look like an index/unnamed artifact
+        index_like = {"unnamed", "index", "id", "row", "rowid", "row_id", "row_number"}
+        protected = []
+        for col in drop_columns[:]:
+            non_null_pct = df[col].notna().mean()
+            name_is_index_like = any(
+                token in col.lower() for token in index_like
+            )
+            if non_null_pct > 0.5 and not name_is_index_like:
+                protected.append(col)
+                drop_columns.remove(col)
+                corrections.append(
+                    f"Column '{col}' protected from dropping "
+                    f"({non_null_pct * 100:.0f}% non-null, appears meaningful)."
+                )
+
+        plan["drop_columns"] = drop_columns
+
+        return json.dumps({
+            "validated_plan": plan,
+            "corrections_applied": corrections,
+            "columns_protected": protected,
+        }, indent=2)
+
+
 class MinimalWranglingExecutionInput(BaseModel):
     dataset_path: str = Field(
         ..., description="Path to the raw CSV dataset"

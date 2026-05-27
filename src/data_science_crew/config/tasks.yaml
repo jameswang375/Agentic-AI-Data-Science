@@ -59,6 +59,39 @@ minimal_wrangling_plan_task:
 
 
 
+wrangling_plan_validation_task:
+  description: >
+    You are a Senior Data Engineer responsible for validating a wrangling
+    plan before it is executed on a dataset.
+
+    You are given:
+    - A raw dataset path
+    - A wrangling plan JSON produced by the previous task
+
+    Your job is to:
+    - Call the wrangling plan validator tool with the dataset path and the
+      wrangling plan from the previous task
+    - Return the validated and corrected plan exactly as the tool returns it
+
+    You MUST:
+    - Use the wrangling plan validator tool
+    - Pass the raw dataset path and the exact wrangling plan JSON string
+      from the previous task
+    - Return the tool output as-is
+
+    You MUST NOT:
+    - Modify the plan yourself
+    - Skip the tool call
+    - Add any wrangling steps not in the validated plan
+
+    Inputs:
+    - Raw dataset path: {dataset_path}
+
+  expected_output: >
+    The validated wrangling plan JSON with any corrections silently applied,
+    ready for execution by the next task.
+
+
 minimal_wrangling_execution_task:
   description: >
     You are a Senior Data Engineer responsible for EXECUTING an

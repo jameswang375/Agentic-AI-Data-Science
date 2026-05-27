@@ -13,6 +13,7 @@ const pageTransition = {
 
 const STEPS = [
   "Planning data cleanup",
+  "Validating cleanup plan",
   "Cleaning dataset",
   "Profiling dataset",
   "Planning visualizations",
