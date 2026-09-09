@@ -174,7 +174,7 @@ function EmptyState({ file, onFileSelect, onSubmit }) {
         <input
           ref={inputRef}
           type="file"
-          accept=".csv,.json,.parquet,.xml,.avro"
+          accept=".csv"
           style={{ display: "none" }}
           onChange={(e) => onFileSelect(e.target.files[0])}
         />
@@ -207,7 +207,7 @@ function EmptyState({ file, onFileSelect, onSubmit }) {
           </>
         )}
 
-        <p className="file-hint">CSV · JSON · Parquet · XML · Avro</p>
+        <p className="file-hint">CSV</p>
       </div>
     </div>
   );
