@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "data_science_crew using CrewAI"
 requires-python = ">=3.10,<3.14"
 dependencies = [
-    "crewai[tools]==1.9.2",
+    "crewai==1.9.2",
     "pandas>=2.0",
     "numpy>=1.26",
     "matplotlib>=3.8",
