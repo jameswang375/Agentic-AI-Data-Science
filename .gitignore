@@ -6,6 +6,7 @@ venv/
 .pyo
 .pyd
 
+
 node_modules/
 build/
 .env.local
