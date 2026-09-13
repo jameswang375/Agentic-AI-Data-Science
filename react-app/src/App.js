@@ -294,7 +294,7 @@ function ResultState({ report, runId, onReset }) {
 function ErrorState({ onReset }) {
   return (
     <div className="centered">
-      <h2>⚠️ Something went wrong</h2>
+      <h2>Something went wrong</h2>
       <p className="muted">Please try again.</p>
 
       <button className="primary-button" onClick={onReset} style={{ marginTop: "15px"}}>
