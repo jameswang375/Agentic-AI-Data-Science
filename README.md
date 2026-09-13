@@ -7,7 +7,7 @@ https://agentic-ai-data-science.onrender.com
 ## A little bit about this app
 This project was built with **CrewAI**, **React**, and **FastAPI**. I built a **multi-agent AI system**, where specialized agents autonomously handle key data science tasks such as **data cleaning**, **exploratory data analysis**, along with generating insights and next steps.
 
-The platform allows users to **upload datasets** through a **React interface** and automatically receive:
+The platform allows users to upload datasets through a **React interface** and automatically receive:
 
 - Comprehensive data analyses, including summary statistics and trends
 
@@ -15,7 +15,7 @@ The platform allows users to **upload datasets** through a **React interface** a
 
 - Actionable insights and reports, delivered in a structured and easy-to-read format
 
-By combining **CrewAI’s** autonomous agents with a responsive **frontend** and efficient **backend** built with **FastAPI**, this application simplifies the data analytics workflow, enabling users to gain meaningful insights from their data quickly and effortlessly.
+By utilizing a sequential agent workflow consisting of 4 agents specialized for different parts of the process, this application simplifies the data analytics workflow and enables users to gain meaningful insights from their data quickly and effortlessly.
 
 # Demos
 ![App Demo 1](assets/demo1.gif)
