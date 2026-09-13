@@ -440,6 +440,12 @@ class EDAExecutionTool(BaseTool):
 
             try:
                 if plot_type == "scatter":
+                    if not pd.api.types.is_numeric_dtype(df[x]) or not pd.api.types.is_numeric_dtype(df[y]):
+                        warnings.append(
+                            f"Scatter plot for '{x}' vs '{y}' skipped — both columns must be numeric."
+                        )
+                        plt.close()
+                        continue
                     x_unique = df[x].nunique()
                     y_unique = df[y].nunique()
                     if not (10 <= x_unique < 200 and 10 <= y_unique < 200):
