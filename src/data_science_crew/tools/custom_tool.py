@@ -49,6 +49,11 @@ class DatasetProfilingTool(BaseTool):
             if pd.api.types.is_numeric_dtype(df[col]):
                 lines.append("Numeric summary:")
                 lines.append(df[col].describe().to_string())
+                scatter_suitable = df[col].nunique() < 200
+                lines.append(
+                    f"Scatter plot suitability: {'SUITABLE' if scatter_suitable else 'NOT SUITABLE'} "
+                    f"({'< 200' if scatter_suitable else '>= 200'} unique values)"
+                )
             else:
                 lines.append("Top categories:")
                 lines.append(
@@ -431,6 +436,12 @@ class EDAExecutionTool(BaseTool):
 
             try:
                 if plot_type == "scatter":
+                    if df[x].nunique() >= 200 or df[y].nunique() >= 200:
+                        warnings.append(
+                            f"Scatter plot for '{x}' vs '{y}' skipped — too many unique values (>= 200)."
+                        )
+                        plt.close()
+                        continue
                     plt.scatter(
                         df[x],
                         df[y],
