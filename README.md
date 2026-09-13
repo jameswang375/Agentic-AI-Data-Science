@@ -16,12 +16,3 @@ The platform allows users to upload datasets through a **React interface** and a
 - Actionable insights and reports, delivered in a structured and easy-to-read format
 
 By utilizing a sequential agent workflow consisting of 4 agents specialized for different parts of the process, this application simplifies the data analytics workflow and enables users to gain meaningful insights from their data quickly and effortlessly.
-
-# Demos
-![App Demo 1](assets/demo1.gif)
-
-
-
-
-
-![App Demo 2](assets/demo2.gif)
