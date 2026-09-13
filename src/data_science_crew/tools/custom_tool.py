@@ -49,11 +49,15 @@ class DatasetProfilingTool(BaseTool):
             if pd.api.types.is_numeric_dtype(df[col]):
                 lines.append("Numeric summary:")
                 lines.append(df[col].describe().to_string())
-                scatter_suitable = df[col].nunique() < 200
-                lines.append(
-                    f"Scatter plot suitability: {'SUITABLE' if scatter_suitable else 'NOT SUITABLE'} "
-                    f"({'< 200' if scatter_suitable else '>= 200'} unique values)"
-                )
+                n_unique = df[col].nunique()
+                scatter_suitable = 10 <= n_unique < 200
+                if scatter_suitable:
+                    reason = f"{n_unique} unique values — continuous enough for scatter"
+                elif n_unique < 10:
+                    reason = f"only {n_unique} unique values — too categorical for scatter, use bar instead"
+                else:
+                    reason = f"{n_unique} unique values — too many for scatter"
+                lines.append(f"Scatter plot suitability: {'SUITABLE' if scatter_suitable else 'NOT SUITABLE'} ({reason})")
             else:
                 lines.append("Top categories:")
                 lines.append(
@@ -436,9 +440,13 @@ class EDAExecutionTool(BaseTool):
 
             try:
                 if plot_type == "scatter":
-                    if df[x].nunique() >= 200 or df[y].nunique() >= 200:
+                    x_unique = df[x].nunique()
+                    y_unique = df[y].nunique()
+                    if not (10 <= x_unique < 200 and 10 <= y_unique < 200):
                         warnings.append(
-                            f"Scatter plot for '{x}' vs '{y}' skipped — too many unique values (>= 200)."
+                            f"Scatter plot for '{x}' vs '{y}' skipped — "
+                            f"unique values out of range (x={x_unique}, y={y_unique}). "
+                            f"Both must be between 10 and 199."
                         )
                         plt.close()
                         continue
