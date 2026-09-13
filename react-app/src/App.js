@@ -229,7 +229,7 @@ function ExecutionState({ currentStep, completedSteps }) {
 
   return (
     <div className="centered">
-      <h2>🧠 Analyzing Your Dataset</h2>
+      <h2>Analyzing Your Dataset</h2>
       <p className="muted elapsed">{formatTime(elapsed)}</p>
 
       <div className="step-list">
