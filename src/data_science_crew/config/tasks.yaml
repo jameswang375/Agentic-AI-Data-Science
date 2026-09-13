@@ -200,6 +200,7 @@ eda_planning_task:
     - Propose exploratory analyses based strictly on profiling results
     - Specify which columns should be visualized together
     - Choose appropriate plot types for each analysis
+    - Justify each plot choice based on the profiling output
     - Focus on understanding distributions, relationships, and anomalies
 
     You MUST NOT:
@@ -229,11 +230,15 @@ eda_planning_task:
     }
 
 
-    Rules:
+    Plot selection rules (STRICT):
+    - Use "histogram" for continuous numeric columns
+    - Use "bar" for categorical columns with 20 or fewer unique values
+    - Use "scatter" ONLY when BOTH columns are numeric AND each has fewer than 200
+      unique values. If either column has 200 or more unique values, do NOT include
+      a scatter plot for that pair — skip it entirely.
+    - Never include a plot that would just show a filled blob or meaningless noise
     - Only include columns that exist in the dataset
-    - Choose plot types appropriate to the data type
-    - Keep the plan concise and focused
-    - Do not include redundant visualizations
+    - Keep the plan concise and focused — do not include redundant visualizations
     - Prefer interpretability over exhaustiveness
 
     Inputs:
@@ -312,14 +317,16 @@ insights_report_task:
     You are provided with a list of generated EDA plots and their relative file paths.
 
     You MUST:
-    - Embed relevant plots directly in the Markdown report using the relative image paths returned by the EDA tool
+    - Embed plots directly in the Markdown report using the relative image paths returned by the EDA tool
       (e.g. ![](/runs/some-id/reports/plots/example.png))
     - Place plots immediately after the section where they are discussed
-    - Only include plots that directly support a written insight
+    - Only embed a plot if it directly reveals a specific insight you are writing about
     - Reference plots naturally in the narrative (e.g. "As shown in the histogram below...")
-
+    - Ask yourself before embedding each plot: "Does this plot show something a reader could not
+      understand from text alone?" Only embed it if the answer is yes.
 
     You MUST NOT:
+    - Embed a plot just because it was generated — omit it if it adds no value
     - Include plots without explanation
     - Invent plots that were not generated
     - Modify file paths or image filenames
