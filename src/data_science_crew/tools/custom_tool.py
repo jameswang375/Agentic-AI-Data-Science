@@ -448,11 +448,22 @@ class EDAExecutionTool(BaseTool):
                         continue
                     x_unique = df[x].nunique()
                     y_unique = df[y].nunique()
+                    n_rows = len(df)
+                    x_ratio = x_unique / n_rows
+                    y_ratio = y_unique / n_rows
                     if not (20 <= x_unique < 200 and 20 <= y_unique < 200):
                         warnings.append(
                             f"Scatter plot for '{x}' vs '{y}' skipped — "
                             f"unique values out of range (x={x_unique}, y={y_unique}). "
-                            f"Both must be between 10 and 199."
+                            f"Both must be between 20 and 199."
+                        )
+                        plt.close()
+                        continue
+                    if x_ratio < 0.05 or y_ratio < 0.05:
+                        warnings.append(
+                            f"Scatter plot for '{x}' vs '{y}' skipped — "
+                            f"too repetitive (x={x_ratio:.1%} unique, y={y_ratio:.1%} unique). "
+                            f"Both must have at least 5% unique values."
                         )
                         plt.close()
                         continue
