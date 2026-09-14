@@ -51,7 +51,6 @@ async def run_crew(file: UploadFile = File(...)):
     _run_queues[run_id] = q
 
     loop = asyncio.get_event_loop()
-    base_url = os.getenv("BASE_URL", "http://localhost:10000")
 
     def emit(event: dict):
         loop.call_soon_threadsafe(q.put_nowait, event)
@@ -60,7 +59,6 @@ async def run_crew(file: UploadFile = File(...)):
         try:
             run(
                 dataset_path=str(dataset_path),
-                base_url=base_url,
                 run_dir=str(run_dir),
                 emit=emit,
             )

@@ -14,7 +14,7 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
 
 
-def run(*, dataset_path: str, base_url: str, run_dir: str = ".", emit=None):
+def run(*, dataset_path: str, run_dir: str = ".", emit=None):
     """
     Run the full CrewAI data science pipeline for a dataset.
     All outputs are scoped to run_dir for per-run isolation.
